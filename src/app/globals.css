@@ -1,13 +1,7 @@
-/* Tailwind v4 core */
 @import "tailwindcss";
 
-/* Removed external CSS import that can fail if the package isn't present */
-/* Was: @import 'tw-animate-css'; */
-
-/* More robust dark variant to match .dark on any ancestor */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Light theme tokens (oklch) */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -44,7 +38,6 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* Dark theme tokens */
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -80,7 +73,6 @@
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-/* Tailwind v4 tokens mapped to your CSS vars */
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -126,7 +118,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Base styles and resets */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -154,20 +145,18 @@
   }
 }
 
-/* Optional: smooth, subtle scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(203 213 225); /* slate-300 */
+  background-color: rgb(203 213 225);
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background-color: rgb(75 85 99); /* slate-600 */
+  background-color: rgb(75 85 99);
 }
 
-/* Optional helper for image previews */
 .image-box {
   width: 100%;
   max-height: 420px;
