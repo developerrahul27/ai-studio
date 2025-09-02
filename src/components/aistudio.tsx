@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react"
 import NextImage from "next/image"
 import Spinner from "./spinner"
 import getErrorMessage from "@/utils/constant"
+import Header from "@/container/header"
 
 type StyleOption = "Editorial" | "Streetwear" | "Vintage"
 
@@ -268,10 +269,7 @@ export default function StudioApp() {
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-7xl flex-col p-4 md:p-6">
-      <header className="mb-4 md:mb-6">
-        <h1 className="text-pretty text-2xl md:text-3xl font-semibold tracking-tight">Mini AI Studio — Chat</h1>
-        <p className="text-sm text-muted-foreground">Upload image → choose style → Generate (mocked).</p>
-      </header>
+      <Header />
 
       <section className="flex flex-1 flex-col gap-4 rounded-lg border bg-card p-3 md:p-4 shadow-lg">
         {chat.length === 0 ? (
@@ -358,11 +356,9 @@ export default function StudioApp() {
             })}
           </ul>
         )}
-        {/* Anchor to auto-scroll to latest message */}
         <div ref={chatEndRef} />
       </section>
 
-      {/* Composer */}
       <section className="sticky bottom-0 mt-4 rounded-lg border bg-card p-3 md:p-4 shadow-lg">
         <div className="grid gap-3">
           {imageDataUrl && (
