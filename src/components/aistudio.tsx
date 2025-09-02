@@ -65,7 +65,6 @@ async function downscaleImageToDataUrl(file: File, maxDim = 1920): Promise<strin
 
   ctx.drawImage(img, 0, 0, targetW, targetH)
 
-
   return canvas.toDataURL("image/jpeg", 0.9)
 }
 
@@ -74,7 +73,6 @@ function loadChat(): ChatItem[] {
     const raw = localStorage.getItem(CHAT_KEY)
     if (!raw) return []
     const parsed = JSON.parse(raw) as ChatItem[]
-
     return Array.isArray(parsed) ? parsed.slice(-10) : []
   } catch {
     return []
@@ -87,23 +85,19 @@ function saveChat(items: ChatItem[]) {
 }
 
 export default function StudioApp() {
-
   const [imageDataUrl, setImageDataUrl] = useState<string>("")
   const [prompt, setPrompt] = useState<string>("")
   const [style, setStyle] = useState<StyleOption | "">("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState<string>("")
 
-
   const [chat, setChat] = useState<ChatItem[]>([])
-
 
   const currentController = useRef<AbortController | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const chatEndRef = useRef<HTMLDivElement | null>(null)
 
   const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: "" })
-
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   function showToast(message: string) {
     setToast({ show: true, message })
@@ -166,44 +160,59 @@ export default function StudioApp() {
   }
 
   async function fetchWithRetry(body: { imageDataUrl: string; prompt: string; style: StyleOption }) {
-    try {
-      const controller = new AbortController()
-      currentController.current = controller
+    const maxAttempts = 3
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const controller = new AbortController()
+        currentController.current = controller
 
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      })
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        })
 
-      if (!res.ok) {
-        let msg = `Request failed (${res.status})`
-        try {
-          const payload = (await res.json()) as { message?: string }
-          msg = payload?.message || msg
-        } catch (err) {
-          console.log(err)
+        if (!res.ok) {
+          let msg = `Request failed (${res.status})`
+          try {
+            const payload = await res.json()
+            msg = payload?.message || msg
+          } catch (err: unknown) {
+            console.log(err)
+          }
+          const retryable = msg.includes("Model overloaded") || res.status === 429 || res.status >= 500
+          if (retryable && attempt < maxAttempts) {
+            const delay = 500 * Math.pow(2, attempt - 1)
+            await new Promise((r) => setTimeout(r, delay))
+            continue
+          }
+          setErrorMsg(msg)
+          setStatus("error")
+          return { data: null as Generation | null, aborted: false }
         }
-        setErrorMsg(msg)
+
+        const data = (await res.json()) as Generation
+        setStatus("success")
+        return { data, aborted: false }
+      } catch (err: unknown) {
+        if ((err as { name?: string })?.name === "AbortError") {
+          setStatus("idle")
+          return { data: null as Generation | null, aborted: true }
+        }
+        if (attempt < maxAttempts) {
+          const delay = 500 * Math.pow(2, attempt - 1)
+          await new Promise((r) => setTimeout(r, delay))
+          continue
+        }
+        setErrorMsg(getErrorMessage(err) || "Network error")
         setStatus("error")
         return { data: null as Generation | null, aborted: false }
+      } finally {
+        currentController.current = null
       }
-
-      const data = (await res.json()) as Generation
-      setStatus("success")
-      return { data, aborted: false }
-    } catch (err: unknown) {
-      if ((err as { name?: string })?.name === "AbortError") {
-        setStatus("idle")
-        return { data: null as Generation | null, aborted: true }
-      }
-      setErrorMsg(getErrorMessage(err) || "Network error")
-      setStatus("error")
-      return { data: null as Generation | null, aborted: false }
-    } finally {
-      currentController.current = null
     }
+    return { data: null as Generation | null, aborted: false }
   }
 
   async function onGenerateClick() {
@@ -214,7 +223,6 @@ export default function StudioApp() {
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`
     const createdAt = new Date().toISOString()
-
 
     const userMsg: ChatUserItem = {
       id: `user-${id}`,
