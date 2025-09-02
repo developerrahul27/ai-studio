@@ -399,7 +399,7 @@ export default function StudioApp() {
                   name="prompt"
                   type="text"
                   aria-label="Prompt"
-                  className="w-full rounded-md border bg-background px-3 py-2 pr-12 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                  className="w-full rounded-md border bg-background px-3 py-2 pr-12 text-sm focus:outline-none focus-ring-0"
                   placeholder="Describe your idea..."
                   value={prompt}
                   onChange={(e: ChangeEvent<HTMLInputElement>) => setPrompt(e.target.value)}
@@ -444,7 +444,7 @@ export default function StudioApp() {
                 id="style"
                 name="style"
                 aria-label="Style"
-                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                className="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus-ring-0"
                 value={style}
                 onChange={(e: ChangeEvent<HTMLSelectElement>) => setStyle(e.target.value as StyleOption | "")}
               >
